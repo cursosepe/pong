@@ -26,6 +26,7 @@
             background: #2d2d2d;
             border-radius: 15px;
             box-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
+            cursor: none; /* Hide cursor for cleaner look */
         }
 
         .scoreboard {
@@ -56,8 +57,8 @@
         const PADDLE_HEIGHT = 100;
         const BALL_SIZE = 15;
         const PADDLE_SPEED = 6;
-        const BASE_BALL_SPEED = 5;
-        const SPEED_INCREMENT = 0.005; // Speed increase per frame
+        const BASE_BALL_SPEED = 4;
+        const SPEED_MULTIPLIER = 1.001; // Multiplicative speed increase per frame
 
         // Game objects
         let player = {
@@ -66,6 +67,7 @@
             width: PADDLE_WIDTH,
             height: PADDLE_HEIGHT,
             dy: 0,
+            targetY: 0, // For mouse control
             score: 0
         };
 
@@ -89,13 +91,16 @@
 
         // Game variables
         let speedMultiplier = 1;
+        let mouseEnabled = false;
 
         // Input handling
         document.addEventListener('keydown', (e) => {
             if (e.key === 'ArrowUp') {
                 player.dy = -PADDLE_SPEED;
+                mouseEnabled = false;
             } else if (e.key === 'ArrowDown') {
                 player.dy = PADDLE_SPEED;
+                mouseEnabled = false;
             }
         });
 
@@ -103,6 +108,17 @@
             if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
                 player.dy = 0;
             }
+        });
+
+        // Mouse control
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const root = document.documentElement;
+            const mouseY = e.clientY - rect.top + root.scrollTop;
+            
+            // Set target Y position with some damping
+            player.targetY = Math.max(0, Math.min(mouseY - player.height/2, GAME_HEIGHT - player.height));
+            mouseEnabled = true;
         });
 
         // Game functions
@@ -147,7 +163,13 @@
         }
 
         function updatePlayer() {
-            player.y += player.dy;
+            if (mouseEnabled) {
+                // Smoothly move towards target position
+                const dy = (player.targetY - player.y) * 0.1;
+                player.y += dy;
+            } else {
+                player.y += player.dy;
+            }
 
             // Keep player within bounds
             if (player.y < 0) player.y = 0;
@@ -174,7 +196,7 @@
 
         function updateBall() {
             // Increase speed gradually while ball is in play
-            speedMultiplier += SPEED_INCREMENT;
+            speedMultiplier *= SPEED_MULTIPLIER;
             
             // Apply current speed
             const currentSpeed = BASE_BALL_SPEED * speedMultiplier;

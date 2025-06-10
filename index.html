@@ -14,7 +14,7 @@
 
         body {
             min-height: 100vh;
-            background: linear-gradient(145deg, #1a1a1a, #2d2d2d);
+            background: #1a1a1a;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -23,9 +23,9 @@
         }
 
         canvas {
-            background: rgba(255, 255, 255, 0.03);
+            background: #2d2d2d;
             border-radius: 15px;
-            box-shadow: 0 0 30px rgba(0, 255, 255, 0.2);
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
         }
 
         .scoreboard {
@@ -33,10 +33,10 @@
             top: 20px;
             width: 100%;
             text-align: center;
-            color: #00ffff;
+            color: #ffffff;
             font-size: 2rem;
             font-weight: bold;
-            text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.7);
         }
     </style>
 </head>
@@ -101,7 +101,7 @@
         });
 
         // Game functions
-        function drawRect(x, y, w, h, color = '#00ffff') {
+        function drawRect(x, y, w, h, color = '#ffffff') {
             ctx.fillStyle = color;
             ctx.beginPath();
             ctx.roundRect(x, y, w, h, 10);
@@ -109,16 +109,14 @@
         }
 
         function drawBall(x, y, size) {
-            ctx.fillStyle = '#00ffff';
+            ctx.fillStyle = '#ffffff';
             ctx.beginPath();
             ctx.arc(x, y, size, 0, Math.PI * 2);
-            ctx.shadowColor = '#00ffff';
-            ctx.shadowBlur = 15;
             ctx.fill();
         }
 
         function drawNet() {
-            ctx.strokeStyle = '#00ffff';
+            ctx.strokeStyle = '#ffffff';
             ctx.setLineDash([5, 5]);
             ctx.beginPath();
             ctx.moveTo(GAME_WIDTH/2, 0);
@@ -219,20 +217,16 @@
             
             oscillator.type = 'sine';
             
-            switch(type) {
-                case 'paddle':
-                    oscillator.frequency.setValueAtTime(400, audioCtx.currentTime);
-                    gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
-                    break;
-                case 'bounce':
-                    oscillator.frequency.setValueAtTime(300, audioCtx.currentTime);
-                    gainNode.gain.setValueAtTime(0.05, audioCtx.currentTime);
-                    break;
-                case 'score':
-                    oscillator.frequency.setValueAtTime(200, audioCtx.currentTime);
-                    gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
-                    break;
-            }
+            oscillator.frequency.setValueAtTime(
+                type === 'paddle' ? 400 : 
+                type === 'bounce' ? 300 : 200,
+                audioCtx.currentTime
+            );
+            
+            gainNode.gain.setValueAtTime(
+                type === 'score' ? 0.2 : 0.1,
+                audioCtx.currentTime
+            );
             
             oscillator.start();
             gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.2);
@@ -241,10 +235,10 @@
 
         // Game loop
         function update() {
-            // Clear canvas
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.02)';
+            // Clear canvas with solid color
+            ctx.fillStyle = '#2d2d2d';
             ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
-
+            
             drawNet();
             
             // Draw elements

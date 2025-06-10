@@ -56,7 +56,8 @@
         const PADDLE_HEIGHT = 100;
         const BALL_SIZE = 15;
         const PADDLE_SPEED = 6;
-        const BALL_SPEED = 5;
+        const BASE_BALL_SPEED = 5;
+        const SPEED_INCREMENT = 0.005; // Speed increase per frame
 
         // Game objects
         let player = {
@@ -81,9 +82,13 @@
             x: GAME_WIDTH/2,
             y: GAME_HEIGHT/2,
             size: BALL_SIZE,
-            dx: BALL_SPEED,
-            dy: BALL_SPEED
+            dx: 1,
+            dy: 1,
+            speed: BASE_BALL_SPEED
         };
+
+        // Game variables
+        let speedMultiplier = 1;
 
         // Input handling
         document.addEventListener('keydown', (e) => {
@@ -132,8 +137,13 @@
         function resetBall() {
             ball.x = GAME_WIDTH/2;
             ball.y = GAME_HEIGHT/2;
-            ball.dx = -ball.dx;
-            ball.dy = BALL_SPEED * (Math.random() > 0.5 ? 1 : -1);
+            
+            // Randomize direction
+            ball.dx = (Math.random() > 0.5 ? 1 : -1);
+            ball.dy = (Math.random() > 0.5 ? 1 : -1);
+            
+            // Reset speed
+            speedMultiplier = 1;
         }
 
         function updatePlayer() {
@@ -163,8 +173,14 @@
         }
 
         function updateBall() {
-            ball.x += ball.dx;
-            ball.y += ball.dy;
+            // Increase speed gradually while ball is in play
+            speedMultiplier += SPEED_INCREMENT;
+            
+            // Apply current speed
+            const currentSpeed = BASE_BALL_SPEED * speedMultiplier;
+            
+            ball.x += ball.dx * currentSpeed;
+            ball.y += ball.dy * currentSpeed;
 
             // Wall collision (top/bottom)
             if (ball.y <= 0 || ball.y + ball.size >= GAME_HEIGHT) {
@@ -178,8 +194,7 @@
                 ball.y + ball.size >= player.y &&
                 ball.y <= player.y + player.height
             ) {
-                ball.dx *= -1.1; // Increase speed slightly
-                ball.dy *= 1.05;
+                ball.dx = Math.abs(ball.dx); // Ensure correct direction
                 playSound('paddle');
             }
 
@@ -189,8 +204,7 @@
                 ball.y + ball.size >= computer.y &&
                 ball.y <= computer.y + computer.height
             ) {
-                ball.dx *= -1.1;
-                ball.dy *= 1.05;
+                ball.dx = -Math.abs(ball.dx); // Ensure correct direction
                 playSound('paddle');
             }
 
